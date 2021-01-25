@@ -114,7 +114,11 @@ Barong::App.define do |config|
   config.set(:kycaid_api_endpoint, 'https://api.kycaid.com/')
 
   # Auth0 configuration -----------------------------------------------
-  config.set(:auth0, Rails.application.config_for(:auth0))
+  config.set(:auth0_tenant_address, 'openware-barong.us.auth0.com')
+  config.set(:client_id, '')
+  config.set(:client_secret, '')
+  config.set(:redirect_uri, 'http://localhost:3000/api/v2/identity/sessions/auth0/callback')
+  config.set(:audience, 'https://barong.openware.service/')
 end
 
 # KYCAID configuring

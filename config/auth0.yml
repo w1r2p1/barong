@@ -1,6 +1,0 @@
-development:
-  auth0_tenant_address: 'openware-barong.us.auth0.com'
-  client_id: ''
-  client_secret: ''
-  redirect_uri: 'http://localhost:3000/api/v2/identity/sessions/auth0/callback'
-  audience: 'https://barong.openware.service/'

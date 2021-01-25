@@ -103,12 +103,12 @@ module API::V2
                failure: []
 
           get '/authorize' do
-            uri = URI::HTTPS.build(host: Barong::App.config.auth0['auth0_tenant_address'], path: '/authorize', query: {
+            uri = URI::HTTPS.build(host: Barong::App.config.auth0_tenant_address, path: '/authorize', query: {
               response_type: 'code',
-              client_id: Barong::App.config.auth0['client_id'],
-              redirect_uri: Barong::App.config.auth0['redirect_uri'],
+              client_id: Barong::App.config.client_id,
+              redirect_uri: Barong::App.config.redirect_uri,
               scope: 'openid profile email',
-              audience: Barong::App.config.auth0['audience']
+              audience: Barong::App.config.audience
             }.to_query)
             redirect uri
           end
@@ -117,13 +117,13 @@ module API::V2
             requires :code
           end
           get '/callback' do
-            url = "https://#{Barong::App.config.auth0['auth0_tenant_address']}/oauth/token"
+            url = "https://#{Barong::App.config.auth0_tenant_address}/oauth/token"
             data = {
               grant_type: 'authorization_code',
-              client_id: Barong::App.config.auth0['client_id'],
-              client_secret: Barong::App.config.auth0['client_secret'],
+              client_id: Barong::App.config.client_id,
+              client_secret: Barong::App.config.client_secret,
               code: params[:code],
-              redirect_uri: Barong::App.config.auth0['redirect_uri']
+              redirect_uri: Barong::App.config.redirect_uri
             }
             response = Faraday.post(url) do |req|
               req.headers['Content-Type'] = 'application/x-www-form-urlencoded'
@@ -134,7 +134,7 @@ module API::V2
               id_token = json['id_token']
               claims = JWT.decode(id_token, nil, false, algorithm: 'RS256')
               user = get_user(claims[0]['email'])
-
+              
               activity_record(user: user.id, action: 'login::2fa', result: 'succeed', topic: 'session')
               csrf_token = open_session(user)
               publish_session_create(user)
