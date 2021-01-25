@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_dependency 'barong/jwt'
+require 'net/http'
 
 module API::V2
   module Identity
@@ -86,6 +87,30 @@ module API::V2
 
           session.destroy
           status(200)
+        end
+
+        namespace :auth0 do
+          desc 'Auth0 authentication',
+               success: { code: 200, message: '' },
+               failure: []
+          
+          get '/authorize' do
+            uri = URI::HTTPS.build(host: Barong::App.config.auth0_tenant_address, path: '/authorize', query: {
+              response_type: 'code',
+              client_id: Barong::App.config.client_id,
+              redirect_uri: 'http://localhost:3000' + Barong::App.config.redirect_uri,
+              scope: 'openid profile email',
+              audience: Barong::App.config.audience
+            }.to_query)
+            redirect uri
+          end
+
+          params do
+            requires :code
+          end
+          get '/callback' do
+            status(200)
+          end
         end
       end
     end
