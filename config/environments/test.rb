@@ -43,8 +43,4 @@ Rails.application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
-
-  # Auth0 configuration
-  config.client_id = 've6NAufF1Pgm1jIhyQgEwa8PCG4vAoNF'
-  config.client_secret = 'ynaE7yyYjvnuhFN_3bx435H2v0IF8jLQpwUCW8ovj-6ONRefuN7ker2L_RR5VfCI'
 end
