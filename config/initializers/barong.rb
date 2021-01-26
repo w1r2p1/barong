@@ -123,6 +123,7 @@ Barong::App.define do |config|
   config.set(:client_secret, ENV['CLIENT_SECRET'])
   config.set(:redirect_uri, 'http://localhost:3000/api/v2/identity/sessions/auth0/auth')
   config.set(:audience, 'https://barong.openware.service/')
+  config.set(:logout_uri, 'http://localhost:3000/')
 end
 
 # KYCAID configuring

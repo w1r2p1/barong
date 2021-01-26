@@ -148,6 +148,14 @@ module API::V2
             end
             status(response.status)
           end
+
+          get '/logout' do
+            uri = URI::HTTPS.build(host: Barong::App.config.auth0_tenant_address, path: '/v2/logout', query: {
+              client_id: Barong::App.config.client_id,
+              returnTo: Barong::App.config.logout_uri
+            }.to_query)
+            redirect uri
+          end
         end
       end
     end
