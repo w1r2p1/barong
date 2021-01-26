@@ -100,7 +100,10 @@ module API::V2
         namespace :auth0 do
           desc 'Auth0 authentication',
                success: { code: 200, message: '' },
-               failure: []
+               failure: [
+                 { code: 400, message: 'Required params are empty' },
+                 { code: 404, message: 'Record is not found' }
+               ]
 
           get '/authorize' do
             uri = URI::HTTPS.build(host: Barong::App.config.auth0_tenant_address, path: '/authorize', query: {
@@ -116,7 +119,7 @@ module API::V2
           params do
             requires :code
           end
-          get '/callback' do
+          get '/auth' do
             url = "https://#{Barong::App.config.auth0_tenant_address}/oauth/token"
             data = {
               grant_type: 'authorization_code',
@@ -132,9 +135,10 @@ module API::V2
             if response.status == 200
               json = JSON.parse(response.body)
               id_token = json['id_token']
+
               claims = JWT.decode(id_token, nil, false, algorithm: 'RS256')
               user = get_user(claims[0]['email'])
-              
+
               activity_record(user: user.id, action: 'login::2fa', result: 'succeed', topic: 'session')
               csrf_token = open_session(user)
               publish_session_create(user)
