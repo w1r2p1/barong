@@ -38,10 +38,6 @@ kstore = Barong::KeyStore.new(pkey)
 # Define default value for secret_key_base in test and development mode
 ENV['SECRET_KEY_BASE'] = '' unless Rails.env.production?
 
-# Define default value for Auth0
-ENV['CLIENT_ID'] ||= ''
-ENV['CLIENT_SECRET'] ||= ''
-
 Barong::App.define do |config|
   # General configuration ---------------------------------------------
   # https://www.openware.com/sdk/docs/barong/configuration.html#general-configuration
@@ -118,12 +114,12 @@ Barong::App.define do |config|
   config.set(:kycaid_api_endpoint, 'https://api.kycaid.com/')
 
   # Auth0 configuration -----------------------------------------------
-  config.set(:auth0_tenant_address, 'openware-barong.us.auth0.com')
-  config.set(:client_id, ENV['CLIENT_ID'])
-  config.set(:client_secret, ENV['CLIENT_SECRET'])
-  config.set(:redirect_uri, 'http://localhost:3000/api/v2/identity/sessions/auth0/auth')
-  config.set(:audience, 'https://barong.openware.service/')
-  config.set(:logout_uri, 'http://localhost:3000/')
+  config.set(:auth0_tenant_address, '')
+  config.set(:auth0_client_id, '')
+  config.set(:auth0_client_secret, '')
+  config.set(:auth0_redirect_uri, 'http://localhost:3000/api/v2/identity/sessions/auth0/auth')
+  config.set(:auth0_audience, '')
+  config.set(:auth0_logout_uri, 'http://localhost:3000/')
 end
 
 # KYCAID configuring

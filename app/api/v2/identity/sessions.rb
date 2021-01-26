@@ -108,10 +108,10 @@ module API::V2
           get '/authorize' do
             uri = URI::HTTPS.build(host: Barong::App.config.auth0_tenant_address, path: '/authorize', query: {
               response_type: 'code',
-              client_id: Barong::App.config.client_id,
-              redirect_uri: Barong::App.config.redirect_uri,
+              client_id: Barong::App.config.auth0_client_id,
+              redirect_uri: Barong::App.config.auth0_redirect_uri,
               scope: 'openid profile email',
-              audience: Barong::App.config.audience
+              audience: Barong::App.config.auth0_audience
             }.to_query)
             redirect uri
           end
@@ -123,10 +123,10 @@ module API::V2
             url = "https://#{Barong::App.config.auth0_tenant_address}/oauth/token"
             data = {
               grant_type: 'authorization_code',
-              client_id: Barong::App.config.client_id,
-              client_secret: Barong::App.config.client_secret,
+              client_id: Barong::App.config.auth0_client_id,
+              client_secret: Barong::App.config.auth0_client_secret,
               code: params[:code],
-              redirect_uri: Barong::App.config.redirect_uri
+              redirect_uri: Barong::App.config.auth0_redirect_uri
             }
             response = Faraday.post(url) do |req|
               req.headers['Content-Type'] = 'application/x-www-form-urlencoded'
@@ -151,8 +151,8 @@ module API::V2
 
           get '/logout' do
             uri = URI::HTTPS.build(host: Barong::App.config.auth0_tenant_address, path: '/v2/logout', query: {
-              client_id: Barong::App.config.client_id,
-              returnTo: Barong::App.config.logout_uri
+              client_id: Barong::App.config.auth0_client_id,
+              returnTo: Barong::App.config.auth0_logout_uri
             }.to_query)
             redirect uri
           end
