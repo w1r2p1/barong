@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 require_dependency 'barong/jwt'
-require 'net/http'
-require 'faraday'
-require 'uri'
 
 module API::V2
   module Identity
@@ -98,62 +95,36 @@ module API::V2
         end
 
         namespace :auth0 do
-          desc 'Auth0 authentication',
-               success: { code: 200, message: '' },
+          desc 'Auth0 authentication by id_token',
+               success: { code: 200, message: 'User authenticated' },
                failure: [
                  { code: 400, message: 'Required params are empty' },
                  { code: 404, message: 'Record is not found' }
                ]
-
-          get '/authorize' do
-            uri = URI::HTTPS.build(host: Barong::App.config.auth0_tenant_address, path: '/authorize', query: {
-              response_type: 'code',
-              client_id: Barong::App.config.auth0_client_id,
-              redirect_uri: Barong::App.config.auth0_redirect_uri,
-              scope: 'openid profile email',
-              audience: Barong::App.config.auth0_audience
-            }.to_query)
-            redirect uri
-          end
-
           params do
-            requires :code
+            requires :id_token,
+                     type: String,
+                     desc: 'id_token from Auth0'
           end
-          get '/auth' do
-            url = "https://#{Barong::App.config.auth0_tenant_address}/oauth/token"
-            data = {
-              grant_type: 'authorization_code',
-              client_id: Barong::App.config.auth0_client_id,
-              client_secret: Barong::App.config.auth0_client_secret,
-              code: params[:code],
-              redirect_uri: Barong::App.config.auth0_redirect_uri
-            }
-            response = Faraday.post(url) do |req|
-              req.headers['Content-Type'] = 'application/x-www-form-urlencoded'
-              req.body = URI.encode_www_form(data)
-            end
-            if response.status == 200
-              json = JSON.parse(response.body)
-              id_token = json['id_token']
+          post '/auth' do
+            claims = Barong::Auth0.new.decode_and_verify(params[:id_token])
+            status(404) unless claims.key?('email')
 
-              claims = JWT.decode(id_token, nil, false, algorithm: 'RS256')
-              user = get_user(claims[0]['email'])
+            user = get_user(claims['email'])
+            csrf_token = open_session(user)
+            publish_session_create(user)
 
-              activity_record(user: user.id, action: 'login::2fa', result: 'succeed', topic: 'session')
-              csrf_token = open_session(user)
-              publish_session_create(user)
-
-              present user, with: API::V2::Entities::UserWithFullInfo, csrf_token: csrf_token
-              status(200)
-            end
-            status(response.status)
+            present user, with: API::V2::Entities::UserWithFullInfo, csrf_token: csrf_token
+            status(200)
           end
 
+          desc 'Logout from Auth0',
+               success: { code: 302, message: 'User logged out' },
+               failure: [
+                 { code: 404, message: 'Record is not found' }
+               ]
           get '/logout' do
-            uri = URI::HTTPS.build(host: Barong::App.config.auth0_tenant_address, path: '/v2/logout', query: {
-              client_id: Barong::App.config.auth0_client_id,
-              returnTo: Barong::App.config.auth0_logout_uri
-            }.to_query)
+            uri = Barong::Auth0.new.logout_uri(Barong::App.config.auth0_client_id, Barong::App.config.auth0_logout_uri)
             redirect uri
           end
         end

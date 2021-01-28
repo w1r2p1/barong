@@ -117,7 +117,6 @@ Barong::App.define do |config|
   config.set(:auth0_tenant_address, '')
   config.set(:auth0_client_id, '')
   config.set(:auth0_client_secret, '')
-  config.set(:auth0_redirect_uri, 'http://localhost:3000/api/v2/identity/sessions/auth0/auth')
   config.set(:auth0_audience, '')
   config.set(:auth0_logout_uri, 'http://localhost:3000/')
 end
